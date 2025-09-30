@@ -1,0 +1,122 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* SCU Food Order System Design System */
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    /* Deep Purple & Yellow Accent Theme */
+    --primary: 280 100% 15%;  /* Deep Purple #2D0A56 */
+    --primary-foreground: 0 0% 100%;
+    --primary-light: 280 90% 25%;
+    --primary-dark: 280 100% 10%;
+    
+    /* Yellow Accent */
+    --accent-yellow: 50 100% 53%;  /* Bright Yellow #FFD60A */
+    --accent-yellow-foreground: 280 100% 10%;
+
+    --secondary: 50 100% 53%;  /* Yellow secondary */
+    --secondary-foreground: 280 100% 15%;
+
+    --muted: 280 20% 95%;
+    --muted-foreground: 280 30% 40%;
+
+    --accent: 50 100% 53%;  /* Yellow accent */
+    --accent-foreground: 280 100% 15%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --border: 271 20% 91%;
+    --input: 271 20% 91%;
+    --ring: 271 81% 56%;
+
+    --radius: 0.75rem;
+
+    /* Login Background */
+    --login-background: 271 81% 36%;
+    
+    /* Food System Colors */
+    --food-orange: 25 95% 53%;
+    --food-green: 142 71% 45%;
+    --food-red: 0 84% 60%;
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-light)));
+    --gradient-hero: linear-gradient(135deg, hsl(var(--primary-dark)), hsl(var(--primary)));
+    --gradient-card: linear-gradient(145deg, hsl(var(--background)), hsl(var(--secondary)));
+
+    /* Shadows */
+    --shadow-sm: 0 2px 4px hsl(var(--primary) / 0.1);
+    --shadow-md: 0 4px 12px hsl(var(--primary) / 0.15);
+    --shadow-lg: 0 8px 24px hsl(var(--primary) / 0.2);
+    
+    /* Sidebar */
+    --sidebar-background: 0 0% 99%;
+    --sidebar-foreground: 271 20% 30%;
+    --sidebar-primary: 271 81% 56%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 271 30% 96%;
+    --sidebar-accent-foreground: 271 81% 30%;
+    --sidebar-border: 271 20% 88%;
+    --sidebar-ring: 271 81% 56%;
+
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+
+  .dark {
+    --background: 271 81% 4%;
+    --foreground: 0 0% 98%;
+    --card: 271 50% 8%;
+    --card-foreground: 0 0% 98%;
+    --popover: 271 50% 8%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 271 81% 66%;
+    --primary-foreground: 271 81% 4%;
+    --secondary: 271 30% 15%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 271 30% 15%;
+    --muted-foreground: 271 10% 65%;
+    --accent: 271 30% 15%;
+    --accent-foreground: 0 0% 98%;
+    --border: 271 30% 20%;
+    --input: 271 30% 20%;
+    --ring: 271 81% 66%;
+    --sidebar-background: 271 50% 8%;
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: 271 81% 66%;
+    --sidebar-primary-foreground: 271 81% 4%;
+    --sidebar-accent: 271 30% 15%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 271 30% 20%;
+    --sidebar-ring: 271 81% 66%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
