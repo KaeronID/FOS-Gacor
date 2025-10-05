@@ -1,73 +1,96 @@
-# Welcome to your Lovable project
+# SCU Food Order System 🍱
 
-## Project info
+Platform pemesanan makanan digital untuk kantin kampus.  
+Aplikasi ini memudahkan **pembeli**, **penjual**, dan **admin** dalam mengelola pemesanan makanan secara cepat dan efisien.
 
-**URL**: https://lovable.dev/projects/ff6d7b04-1e1f-4e16-af5f-000c87b02b42
+---
 
-## How can I edit this code?
+## 🚀 Fitur Utama
 
-There are several ways of editing your application.
+### 👤 Pembeli
+- Melihat daftar menu dari berbagai toko
+- Menambahkan produk ke keranjang
+- Melihat detail menu dan ulasan pelanggan
+- Melihat profil toko dan daftar produknya
+- Checkout dan menyelesaikan pesanan
 
-**Use Lovable**
+### 🏪 Penjual
+- Mengelola daftar menu (tambah, edit, hapus)
+- Melihat pesanan masuk
+- Memberikan respon terhadap ulasan pembeli
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/ff6d7b04-1e1f-4e16-af5f-000c87b02b42) and start prompting.
+### ⚙️ Admin
+- Mengelola akun penjual dan pembeli
+- Melihat laporan transaksi dan aktivitas pengguna
 
-Changes made via Lovable will be committed automatically to this repo.
+---
 
-**Use your preferred IDE**
+## 💻 Teknologi yang Digunakan
+- **React + TypeScript**
+- **Tailwind CSS** (dengan shadcn/ui)
+- **Lucide Icons**
+- **Local Storage / Firebase** untuk penyimpanan data
+- **Vite** sebagai bundler
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+---
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## 📂 Struktur Folder Utama
 
-Follow these steps:
+src/
+├── components/ # Komponen UI (Navbar, Card, Button, dll)
+├── pages/ # Halaman utama (Buyer, Seller, Admin)
+├── utils/ # Fungsi penyimpanan dan helper
+├── types/ # Tipe data TypeScript
+├── assets/ # Gambar dan ikon
+└── main.tsx # Entry point aplikasi
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+yaml
+Copy code
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+---
 
-# Step 3: Install the necessary dependencies.
-npm i
+## 🧭 Cara Menjalankan Project
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+1. **Clone repositori**
+   ```bash
+   git clone https://github.com/username/scu-food-order-system.git
+   cd scu-food-order-system
+Install dependencies
+
+bash
+Copy code
+npm install
+Jalankan di mode pengembangan
+
+bash
+Copy code
 npm run dev
-```
+Build untuk produksi
 
-**Edit a file directly in GitHub**
+bash
+Copy code
+npm run build
+🧑‍🎓 Tentang Project
+Dibuat sebagai bagian dari pengembangan sistem pemesanan kantin berbasis digital untuk lingkungan kampus SCU.
+Tujuan utamanya adalah mengurangi antrean fisik dan meningkatkan efisiensi transaksi.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+📸 Tampilan Utama
+Halaman Pembeli
 
-**Use GitHub Codespaces**
+Detail Menu
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+Profil Toko
 
-## What technologies are used for this project?
+Keranjang Belanja
 
-This project is built with:
+Halaman Admin dan Seller (opsional)
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+🧾 Lisensi
+Proyek ini menggunakan lisensi MIT.
+Bebas digunakan dan dikembangkan untuk tujuan pembelajaran atau pengembangan sistem serupa.
 
-## How can I deploy this project?
+👨‍💻 Kontributor
+Aaron Titan — Developer Frontend
 
-Simply open [Lovable](https://lovable.dev/projects/ff6d7b04-1e1f-4e16-af5f-000c87b02b42) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+SCU Developer Team — UI/UX & Dokumentasi
+---
