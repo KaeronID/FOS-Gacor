@@ -12,6 +12,8 @@ import {
   Users,
   MapPin,
   Package,
+  Store,
+  MessageSquare,
 } from "lucide-react";
 import {
   getMenuById,
@@ -19,6 +21,7 @@ import {
   saveCart,
   getReviewsByMenuId,
   getStores,
+  getMenus,
 } from "@/utils/storage";
 import { Menu, Review } from "@/types";
 import { toast } from "@/hooks/use-toast";
@@ -29,9 +32,11 @@ const MenuDetail: React.FC = () => {
   const navigate = useNavigate();
   const [menu, setMenu] = useState<Menu | null>(null);
   const [storeLocation, setStoreLocation] = useState("");
+  const [storeMenus, setStoreMenus] = useState<Menu[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [cart, setCart] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showStoreProducts, setShowStoreProducts] = useState(false);
 
   useEffect(() => {
     if (!id) {
@@ -39,7 +44,7 @@ const MenuDetail: React.FC = () => {
       return;
     }
 
-    const fetchMenu = () => {
+    const fetchMenu = async () => {
       const menuData = getMenuById(id);
       if (!menuData) {
         toast({
@@ -58,6 +63,13 @@ const MenuDetail: React.FC = () => {
       );
       setStoreLocation(storeData?.location || "Location not available");
 
+      const allMenus = getMenus();
+      const sameStoreMenus = allMenus.filter(
+        (m) => m.sellerId === menuData.sellerId && m.id !== menuData.id
+      );
+      setStoreMenus(sameStoreMenus.slice(0, 6));
+      setShowStoreProducts(sameStoreMenus.length > 0);
+
       setReviews(getReviewsByMenuId(id));
       setCart(getCart());
       setLoading(false);
@@ -70,7 +82,16 @@ const MenuDetail: React.FC = () => {
     const currentUser = JSON.parse(
       localStorage.getItem("scu_fos_current_user") || "null"
     );
-    if (!currentUser) return;
+
+    if (!currentUser) {
+      toast({
+        title: "Login Required",
+        description: "You must log in to add items to your cart.",
+        variant: "destructive",
+      });
+      navigate("/login");
+      return;
+    }
 
     const existingCart = getCart();
     const userCartItems = existingCart.filter(
@@ -100,13 +121,12 @@ const MenuDetail: React.FC = () => {
       updatedUserItems = [...userCartItems, newItem];
     }
 
-    // Combine with other users' cart items
     const otherUsersItems = existingCart.filter(
       (item: any) => item.buyerId !== currentUser.id
     );
     const newCart = [...otherUsersItems, ...updatedUserItems];
 
-    setCart(updatedUserItems);
+    setCart(newCart);
     saveCart(newCart);
 
     toast({
@@ -115,34 +135,57 @@ const MenuDetail: React.FC = () => {
     });
   };
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("id-ID", {
+  const handleStoreClick = () => {
+    if (menu && menu.sellerId) {
+      navigate(`/store/${menu.sellerId}`);
+    }
+  };
+
+  const formatPrice = (price: number) =>
+    new Intl.NumberFormat("id-ID", {
       style: "currency",
       currency: "IDR",
       minimumFractionDigits: 0,
     }).format(price);
-  };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("id-ID", {
+  const formatDate = (dateString: string) =>
+    new Date(dateString).toLocaleDateString("id-ID", {
       year: "numeric",
       month: "long",
       day: "numeric",
     });
+
+  const renderStars = (rating: number) => {
+    return (
+      <div className="flex items-center gap-0.5">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <Star
+            key={star}
+            className={`h-4 w-4 ${
+              star <= rating
+                ? "fill-yellow-400 text-yellow-400"
+                : "fill-gray-200 text-gray-200 dark:fill-gray-700 dark:text-gray-700"
+            }`}
+          />
+        ))}
+      </div>
+    );
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 dark:bg-gray-900">
         <Navbar showCart={true} />
-        <div className="max-w-4xl mx-auto px-4 py-6">
-          <div className="animate-pulse">
-            <div className="h-64 bg-muted rounded-lg mb-6"></div>
-            <div className="h-8 bg-muted rounded w-1/2 mb-4"></div>
-            <div className="h-4 bg-muted rounded w-1/4 mb-6"></div>
-            <div className="space-y-2">
-              <div className="h-4 bg-muted rounded"></div>
-              <div className="h-4 bg-muted rounded w-3/4"></div>
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          <div className="animate-pulse space-y-6">
+            <div className="h-6 bg-purple-100 dark:bg-gray-800 rounded w-24"></div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="h-96 bg-purple-100 dark:bg-gray-800 rounded-lg"></div>
+              <div className="space-y-4">
+                <div className="h-8 bg-purple-100 dark:bg-gray-800 rounded w-3/4"></div>
+                <div className="h-4 bg-purple-100 dark:bg-gray-800 rounded w-1/2"></div>
+                <div className="h-4 bg-purple-100 dark:bg-gray-800 rounded w-1/4"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -150,29 +193,27 @@ const MenuDetail: React.FC = () => {
     );
   }
 
-  if (!menu) {
-    return null;
-  }
+  if (!menu) return null;
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 dark:bg-gray-900">
       <Navbar showCart={true} />
 
-      <div className="max-w-5xl mx-auto px-4 py-8">
+      <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Back Button */}
-        <Button
-          variant="ghost"
+        <button
           onClick={() => navigate("/buyer")}
-          className="mb-6 text-purple-800 dark:text-purple-300"
+          className="flex items-center gap-2 text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 mb-8 transition-colors"
         >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Menu
-        </Button>
+          <ArrowLeft className="h-4 w-4" />
+          <span className="text-sm font-medium">Back</span>
+        </button>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Image Section */}
-          <div className="order-1 lg:order-2">
-            <div className="aspect-[4/3] overflow-hidden rounded-xl shadow-md">
+        {/* Main Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
+          {/* Image */}
+          <div className="order-1 lg:order-1">
+            <div className="aspect-square overflow-hidden rounded-xl bg-white shadow-sm border border-purple-100">
               <img
                 src={
                   menu.image ||
@@ -184,157 +225,191 @@ const MenuDetail: React.FC = () => {
             </div>
           </div>
 
-          {/* Details Section */}
-          <div className="space-y-6 order-2 lg:order-1">
-            <div>
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-2 gap-2">
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                  {menu.name}
-                </h1>
-                <Badge
-                  variant="secondary"
-                  className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-                >
-                  {menu.category}
-                </Badge>
-              </div>
-              <p className="text-lg text-gray-600 dark:text-gray-400 mb-2">
-                {menu.storeName}
-              </p>
+          {/* Details */}
+          <div className="space-y-4 order-2 lg:order-2">
+            {/* Title */}
+            <h1 className="text-3xl font-semibold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+              {menu.name}
+            </h1>
+            {/* Category Badge */}
+            <Badge className="bg-gradient-to-r from-purple-500 to-blue-500 text-white border-0">
+              {menu.category}
+            </Badge>
 
-              <div className="flex items-center space-x-4 mb-4">
-                <div className="flex items-center space-x-1">
-                  <Star className="h-5 w-5 fill-yellow-300 text-yellow-300" />
-                  <span className="text-lg font-medium text-gray-900 dark:text-white">
-                    {menu.rating}
-                  </span>
-                  <span className="text-muted-foreground">
-                    ({menu.reviewCount} reviews)
-                  </span>
-                </div>
-                <div className="flex items-center space-x-1 text-muted-foreground">
-                  <Users className="h-5 w-5" />
-                  <span>{menu.reviewCount} reviews</span>
-                </div>
-              </div>
-
-              <div className="text-3xl font-bold text-purple-800 dark:text-purple-300 mb-2">
+            {/* Price + Estimasi + Stock */}
+            <div className="flex items-center gap-6">
+              {/* Harga */}
+              <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
                 {formatPrice(menu.price)}
               </div>
 
-              <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
-                <div className="flex items-center">
-                  <Clock className="h-4 w-4 mr-1" />
-                  Prep: {menu.prepTime || "N/A"} min
-                </div>
-                <div className="flex items-center">
-                  <Package className="h-4 w-4 mr-1" />
-                  Stock: {menu.stock || 0}
-                </div>
-                <div className="flex items-center">
-                  <MapPin className="h-4 w-4 mr-1" />
-                  {storeLocation}
-                </div>
+              {/* Estimasi */}
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                <span className="text-sm text-gray-700 dark:text-gray-300">
+                  {menu.prepTime || "N/A"} min
+                </span>
+              </div>
+
+              {/* Stok */}
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                <Package className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                <span className="text-sm text-gray-700 dark:text-gray-300">
+                  {menu.stock || 0} left
+                </span>
               </div>
             </div>
 
-            <Separator className="dark:bg-gray-700" />
+            {/* Store */}
+            <button
+              onClick={handleStoreClick}
+              className="flex items-center gap-3 p-3 rounded-lg hover:bg-purple-50 dark:hover:bg-gray-800 transition-colors"
+            >
+              {/* Foto Toko */}
+              <img
+                src={
+                  menu.storeImage ||
+                  `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                    menu.storeName
+                  )}&background=random`
+                }
+                alt={menu.storeName}
+                className="w-10 h-10 rounded-full object-cover ring-2 ring-purple-200"
+              />
 
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+              {/* Info Toko */}
+              <div className="text-left">
+                {/* Nama Toko */}
+                <div className="text-sm font-medium text-gray-900 dark:text-white">
+                  {menu.storeName}
+                </div>
+
+                {/* Rating */}
+                <div className="flex items-center gap-1 mt-2">
+                  {renderStars(menu.rating)}
+                  <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                    {menu.rating}
+                  </span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    ({menu.reviewCount})
+                  </span>
+                </div>
+
+                {/* Lokasi */}
+                <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-2">
+                  <MapPin className="h-3 w-3" />
+                  {storeLocation}
+                </div>
+              </div>
+            </button>
+
+            <Separator />
+
+            {/* Description */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-5 border border-purple-100 dark:border-gray-700">
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
                 Description
               </h3>
-              <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+              <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
                 {menu.description}
               </p>
             </div>
 
-            {menu.ingredients && menu.ingredients.length > 0 && (
-              <>
-                <Separator className="dark:bg-gray-700" />
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-                    Ingredients
-                  </h3>
-                  <ul className="list-disc list-inside text-gray-600 dark:text-gray-400">
-                    {menu.ingredients.map((ingredient, index) => (
-                      <li key={index}>
-                        {ingredient.ingredientName} ({ingredient.quantity}{" "}
-                        units)
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </>
-            )}
-
+            {/* Add to Cart */}
             <Button
-              className="w-full h-12 text-lg bg-purple-600 hover:bg-purple-700 text-white"
+              className="w-full h-12 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-medium shadow-md hover:shadow-lg transition-all"
               onClick={() => addToCart(menu)}
+              disabled={menu.stock === 0}
             >
               <ShoppingCart className="h-5 w-5 mr-2" />
-              Add to Cart - {formatPrice(menu.price)}
+              {menu.stock === 0 ? "Out of Stock" : "Add to Cart"}
             </Button>
           </div>
         </div>
 
-        {/* Reviews Section */}
-        {reviews.length > 0 && (
-          <div className="mt-12">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-              Customer Reviews
+        {/* Reviews */}
+        <div className="mb-16">
+          <div className="flex items-center gap-3 mb-6">
+            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
+              Reviews
             </h2>
-            <div className="space-y-6">
-              {reviews.slice(0, 5).map((review) => (
-                <Card
+            <div className="h-px flex-1 bg-gradient-to-r from-purple-200 to-transparent"></div>
+          </div>
+
+          {reviews.length > 0 ? (
+            <div className="space-y-4">
+              {reviews.map((review) => (
+                <div
                   key={review.id}
-                  className="border-0 shadow-sm bg-white dark:bg-gray-800"
+                  className="bg-white dark:bg-gray-800 border border-purple-100 dark:border-gray-700 rounded-lg p-6 hover:shadow-md transition-shadow"
                 >
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-blue-500 flex items-center justify-center text-white font-medium">
+                        {review.buyerName.charAt(0).toUpperCase()}
+                      </div>
                       <div>
-                        <CardTitle className="text-lg text-gray-900 dark:text-white">
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">
                           {review.buyerName}
-                        </CardTitle>
-                        <div className="flex items-center space-x-1 mt-1">
-                          {Array.from({ length: 5 }).map((_, i) => (
-                            <Star
-                              key={i}
-                              className={`h-4 w-4 ${
-                                i < review.rating
-                                  ? "fill-yellow-300 text-yellow-300"
-                                  : "text-gray-300 dark:text-gray-600"
-                              }`}
-                            />
-                          ))}
-                          <span className="text-sm text-muted-foreground ml-2">
-                            {formatDate(review.createdAt)}
-                          </span>
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          {formatDate(review.createdAt)}
                         </div>
                       </div>
                     </div>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <p className="text-gray-600 dark:text-gray-400 mb-3">
-                      {review.comment}
-                    </p>
-                    {review.sellerResponse && (
-                      <div className="bg-gray-100 dark:bg-gray-700 p-3 rounded-lg">
-                        <p className="text-sm font-medium text-gray-900 dark:text-white mb-1">
-                          Seller Response:
-                        </p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          {review.sellerResponse}
-                        </p>
-                        {review.respondedAt && (
-                          <p className="text-xs text-muted-foreground mt-2">
-                            {formatDate(review.respondedAt)}
-                          </p>
-                        )}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+                    <div className="bg-yellow-50 dark:bg-yellow-900/20 px-3 py-1 rounded-full">
+                      {renderStars(review.rating)}
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {review.comment}
+                  </p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="bg-gradient-to-br from-purple-50 to-blue-50 dark:bg-gray-800 border-2 border-dashed border-purple-200 dark:border-gray-700 rounded-lg p-12 text-center">
+              <MessageSquare className="h-12 w-12 mx-auto mb-3 text-purple-300 dark:text-gray-600" />
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                No reviews yet. Be the first to review!
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* More from Store */}
+        {showStoreProducts && (
+          <div>
+            <div className="flex items-center gap-3 mb-6">
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
+                More from {menu.storeName}
+              </h2>
+              <div className="h-px flex-1 bg-gradient-to-r from-blue-200 to-transparent"></div>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              {storeMenus.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => navigate(`/menu/${item.id}`)}
+                  className="group text-left"
+                >
+                  <div className="aspect-square overflow-hidden rounded-lg bg-white border border-purple-100 mb-3 shadow-sm hover:shadow-md transition-shadow">
+                    <img
+                      src={
+                        item.image ||
+                        `https://picsum.photos/300/300?random=${item.id}`
+                      }
+                      alt={item.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                  <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-1 line-clamp-1">
+                    {item.name}
+                  </h3>
+                  <p className="text-sm font-semibold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                    {formatPrice(item.price)}
+                  </p>
+                </button>
               ))}
             </div>
           </div>

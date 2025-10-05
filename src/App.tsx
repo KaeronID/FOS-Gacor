@@ -26,6 +26,8 @@ import SellerSettings from "./pages/Seller/SellerSettings";
 import AddMenu from "./pages/Seller/AddMenu";
 import EditMenu from "./pages/Seller/EditMenu";
 import NotFound from "./pages/NotFound";
+import StoreDetail from "@/pages/StoreDetail";
+import StoreList from "@/pages/StoreList";
 
 // Initialize demo data
 initializeDemoData();
@@ -89,7 +91,6 @@ const AppRoutes: React.FC = () => {
           </PublicRoute>
         }
       />
-
       {/* Buyer Routes */}
       <Route
         path="/buyer"
@@ -163,7 +164,6 @@ const AppRoutes: React.FC = () => {
           </ProtectedRoute>
         }
       />
-
       {/* Seller Routes */}
       <Route
         path="/seller"
@@ -206,7 +206,6 @@ const AppRoutes: React.FC = () => {
         }
       />
       <Route path="/seller/orders" element={<AllOrdersPage />} />
-
       {/* Admin Routes */}
       <Route
         path="/admin/*"
@@ -216,9 +215,11 @@ const AppRoutes: React.FC = () => {
           </ProtectedRoute>
         }
       />
-
       {/* Catch-all route */}
       <Route path="*" element={<NotFound />} />
+      <Route path="/store/:sellerId" element={<StoreDetail />} />
+      menu.storeName
+      <Route path="/store-list" element={<StoreList />} />
     </Routes>
   );
 };

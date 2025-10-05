@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useMediaQuery } from "react-responsive";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   Card,
@@ -61,6 +62,7 @@ const BuyerDashboard: React.FC = () => {
   const [cart, setCart] = useState<any[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [loadingItems, setLoadingItems] = useState<string[]>([]);
+  const isDesktop = useMediaQuery({ minWidth: 1024 });
 
   // Real-time cart updates
   useEffect(() => {
@@ -85,8 +87,42 @@ const BuyerDashboard: React.FC = () => {
     return () => window.removeEventListener("cartUpdated", handleCartUpdate);
   }, [user]);
 
+  // Fungsi helper untuk filter max 4 produk per toko
+  const filterTopProductsPerStore = (products: Menu[], maxPerStore: number) => {
+    // Group per storeName
+    const groupedByStore = products.reduce((acc, product) => {
+      if (!acc[product.storeName]) {
+        acc[product.storeName] = [];
+      }
+      acc[product.storeName].push(product);
+      return acc;
+    }, {} as Record<string, Menu[]>);
+
+    // Sort per toko berdasarkan likes, lalu rating, ambil maxPerStore
+    const filteredProducts: Menu[] = [];
+    Object.values(groupedByStore).forEach((storeProducts) => {
+      storeProducts.sort((a, b) => {
+        const likesA = a.likes || a.reviewCount || 0; // Fallback ke reviewCount jika likes tidak ada
+        const likesB = b.likes || b.reviewCount || 0;
+        if (likesA !== likesB) return likesB - likesA; // Prioritas likes
+        return b.rating - a.rating; // Jika likes sama, sort by rating
+      });
+      filteredProducts.push(...storeProducts.slice(0, maxPerStore));
+    });
+
+    // Sort global berdasarkan likes, lalu rating
+    filteredProducts.sort((a, b) => {
+      const likesA = a.likes || a.reviewCount || 0;
+      const likesB = b.likes || b.reviewCount || 0;
+      if (likesA !== likesB) return likesB - likesA;
+      return b.rating - a.rating;
+    });
+
+    return filteredProducts;
+  };
+
   useEffect(() => {
-    // Apply filters and sorting
+    // Apply filters dan sorting
     let filtered = menus.filter((menu) => {
       const matchesSearch =
         menu.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -97,41 +133,10 @@ const BuyerDashboard: React.FC = () => {
       return matchesSearch && matchesCategory;
     });
 
-    // Enhanced sorting with store variety
+    // Sorting dan limit per toko
     if (sortBy === "rating-store") {
-      const storeGroups = filtered.reduce((groups, menu) => {
-        if (!groups[menu.storeName]) {
-          groups[menu.storeName] = [];
-        }
-        groups[menu.storeName].push(menu);
-        return groups;
-      }, {} as Record<string, Menu[]>);
-
-      Object.keys(storeGroups).forEach((storeName) => {
-        storeGroups[storeName].sort((a, b) => b.rating - a.rating);
-      });
-
-      filtered = [];
-      const storeNames = Object.keys(storeGroups).sort((a, b) => {
-        const avgRatingA =
-          storeGroups[a].reduce((sum, menu) => sum + menu.rating, 0) /
-          storeGroups[a].length;
-        const avgRatingB =
-          storeGroups[b].reduce((sum, menu) => sum + menu.rating, 0) /
-          storeGroups[b].length;
-        return avgRatingB - avgRatingA;
-      });
-
-      let maxLength = Math.max(
-        ...Object.values(storeGroups).map((arr) => arr.length)
-      );
-      for (let i = 0; i < maxLength; i++) {
-        storeNames.forEach((storeName) => {
-          if (storeGroups[storeName][i]) {
-            filtered.push(storeGroups[storeName][i]);
-          }
-        });
-      }
+      // Di desktop, batasi 4 per toko; di mobile, batasi 2
+      filtered = filterTopProductsPerStore(filtered, isDesktop ? 4 : 2);
     } else if (sortBy === "rating") {
       filtered.sort((a, b) => b.rating - a.rating);
     } else if (sortBy === "price-low") {
@@ -139,12 +144,17 @@ const BuyerDashboard: React.FC = () => {
     } else if (sortBy === "price-high") {
       filtered.sort((a, b) => b.price - a.price);
     } else if (sortBy === "popular") {
-      filtered.sort((a, b) => (b.reviewCount || 0) - (a.reviewCount || 0));
+      filtered.sort((a, b) => {
+        const likesA = a.likes || a.reviewCount || 0;
+        const likesB = b.likes || b.reviewCount || 0;
+        if (likesA !== likesB) return likesB - likesA;
+        return b.rating - a.rating;
+      });
     }
 
     setFilteredMenus(filtered);
     setCurrentPage(1);
-  }, [menus, searchTerm, selectedCategory, sortBy]);
+  }, [menus, searchTerm, selectedCategory, sortBy, isDesktop]);
 
   const categories = [
     "all",
